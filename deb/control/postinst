@@ -1,0 +1,6 @@
+#!/bin/sh
+set -e
+update-rc.d /etc/init.d/cloudwatchd 2 3 4 5 . stop 0 1 6
+chown -R cloudwatchd:root /etc/cloudwatchd
+chown -R cloudwatchd:root /usr/sbin/cloudwatchd-worker
+chmod -R 1755 /etc/cloudwatchd/metrics
