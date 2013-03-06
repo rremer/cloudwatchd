@@ -1,14 +1,12 @@
 Summary: !Summary!
 Name: !Name!
 Version: !Version!
-Release: !Version!
+Release: 1
 License: !License!
-Requires: !YumDepends!
+Requires: !Depends!
 %description
 !Description!
-
 %files
 !RPMFiles!
-
 %changelog
 !Changelist!

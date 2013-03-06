@@ -58,10 +58,12 @@ build() {
             buildManifest
             chmod -R 0755 cloudwatchd/DEBIAN
             cd cloudwatchd
+            # Generate the md5sums file
             find . -type f | xargs md5sum | \
-            sed -e 's_  _ /_g' | \
-            grep -v "\/DEBIAN\/" > ../DEBIAN/md5sums
+            sed -e 's_  ._ _g' | \
+            grep -v "\/DEBIAN\/" > DEBIAN/md5sums
             cd ..
+            # Build the deb
             sudo dpkg-deb --build cloudwatchd
     elif [ "$PKG" = "rpm" ]
         then
@@ -76,6 +78,7 @@ build() {
                 then BUILDROOT="$(pwd)/cloudwatchd"
                 else BUILDROOT="$EXEC_PATH/cloudwatchd"
             fi
+            # Build the rpm
             sudo rpmbuild -bb $MANIFEST_OUT --buildroot $BUILDROOT --define "_rpmdir ."
     else
         echo "$PKG is not a valid build option, exiting."
@@ -109,25 +112,61 @@ buildManifest() {
                     then template_value="  $template_value"
                 fi
             elif [ "$PKG" = 'rpm' ]
-                then true
+                then
                 if [ "$value" = 'RPMFiles' ]
-                    then
+                    then true
+                        # Find all files in package dir and dump to a file
                         cd cloudwatchd
                         find . -type f |\
                         sed -e 's_  __g' > ../rpmfiles.tmp
                         cd ..
+                        # Set paths to fixed, from relative
                         sed -i -e's_\./_/_g' rpmfiles.tmp
+                        # Remove the %files tag from wherever it is in the doc
+                        # so we can *append* all files
                         sed -i -e's_%files__g' "$MANIFEST_OUT"
+                        # Remove the tag, the final sed does nothing this round
                         sed -i -e's_'!"$value"!'_d' "$MANIFEST_OUT"
+                        # Append the files tag and dump all paths after it
                         echo '%files' >> "$MANIFEST_OUT"
                         cat rpmfiles.tmp >> "$MANIFEST_OUT"
+                        rm rpmfiles.tmp
+                fi
+                if [ "$value" = 'Depends' ]
+                    then
+                        # Separate comma-delimeted depencies onto lines
+                        echo $template_value | sed 's/, /\n/g' > rpmdepends.tmp
+                        # TODO:Deal with how to identify isa/noarch
+                        #sed -i 's/$/\%\{\?_isa}/g' rpmdepends.tmp
+                        # Append noarch to each dependency
+                        sed -i 's/$/.noarch/g' rpmdepends.tmp
+                        # Put all depencies back onto one line
+                        template_value=$(sed ':a;N;s/\n/, /g' rpmdepends.tmp)
+                        rm rpmdepends.tmp
                 fi
             fi
             if [ -z "$template_value" ]
                 then template_value=" "
             fi
-            sed -i -e's_'\!"$value"\!'_'"$template_value"'_g' "$MANIFEST_OUT"
+            # Replace each tagged entry with the matching entry in version.yaml
+            # Note: finding a control character not used in the templates is hard
+            sed -i -e's~'\!"$value"\!'~'"$template_value"'~g' "$MANIFEST_OUT"
         done
+
+        # Per-package finishing options
+        if [ "$PKG" = 'rpm' ]
+            then
+                # Append the installation scripts to the manifest
+                for script in `ls cloudwatchd/build`
+                    do
+                        echo %"$script" >> "$MANIFEST_OUT"
+                        cat cloudwatchd/build/$script >> "$MANIFEST_OUT"
+                    done
+                # Clean up the spec spacing
+                cat $MANIFEST_OUT | tr -s '\n' > $MANIFEST_OUT.2
+                mv $MANIFEST_OUT.2 $MANIFEST_OUT
+                sed -i 's/%/\n%/g' "$MANIFEST_OUT"
+        fi
 }
 
 setup

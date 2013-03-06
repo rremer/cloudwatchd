@@ -4,6 +4,6 @@ Maintainer: !Maintainer!
 Architecture: !Architecture!
 Section: !Section!
 Priority: !Priority!
-Depends: !AptDepends!
+Depends: !Depends!
 Description: !Summary!
 !Description!

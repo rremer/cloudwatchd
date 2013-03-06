@@ -1,5 +1,3 @@
-#!/bin/sh
-set -e
 if [ "$1" = install ]; then
   if [ -z `grep cloudwatchd /etc/shadow` ]
     then adduser --system --shell /sbin/nologin cloudwatchd --gid 0 --ne-create-home

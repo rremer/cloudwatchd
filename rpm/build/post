@@ -1,0 +1,4 @@
+chkconfig --add cloudwatchd
+chown -R cloudwatchd /etc/cloudwatchd
+chown -R cloudwatchd /usr/sbin/cloudwatchd-worker
+chmod -R 1755 /etc/cloudwatchd/metrics

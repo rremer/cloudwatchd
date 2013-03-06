@@ -1,0 +1,5 @@
+if [ -n `grep cloudwatchd /etc/shadow` ]
+    then deluser cloudwatchd
+fi
+
+chkconfig --del cloudwatchd
