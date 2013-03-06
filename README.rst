@@ -12,4 +12,6 @@ General project organization:
 * Docs are kept in manpage format in the "docs" directory
 
 Quick package internalization tip:
-The scripts/build_pkg.sh script will pull in the configuration files and sample metrics. If you want to make an internal version of the package, you could edit credentials.conf with your Amazon Cloudwatchd-rw credentials, and put any custom metrics you might like automatically tracked int the metrics directory before running scripts/build_pkg.sh
+The scripts/build_pkg.sh script will pull in the configuration files and sample metrics. If you want to make an internal version of the package, you could edit credentials.conf with your Amazon Cloudwatchd-rw credentials, and put any custom metrics you might like automatically tracked into the metrics directory before running scripts/build_pkg.sh
+
+*rpm build is a work in progress, deb build is stable*
