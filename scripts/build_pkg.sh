@@ -36,6 +36,7 @@ setup() {
     cp ../*.conf cloudwatchd/etc/cloudwatchd/
     mkdir -p cloudwatchd/usr/sbin
     cp ../cloudwatchd-worker.py cloudwatchd/usr/sbin/cloudwatchd-worker
+    cp -r ../metrics cloudwatchd/
     # Copy MANPAGEs, identified by a title line
     for MANPAGE in $(grep ".TH" ../docs/* | cut -d ':' -f 1 | uniq)
         do
