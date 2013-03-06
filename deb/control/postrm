@@ -7,5 +7,6 @@ fi
 
 if [ -n `grep $DAEMON_USER /etc/shadow` ]
     then deluser cloudwatchd
+fi
 
 update-rc.d cloudwatchd remove

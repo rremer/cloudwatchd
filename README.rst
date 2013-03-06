@@ -14,4 +14,6 @@ General project organization:
 Quick package internalization tip:
 The scripts/build_pkg.sh script will pull in the configuration files and sample metrics. If you want to make an internal version of the package, you could edit credentials.conf with your Amazon Cloudwatchd-rw credentials, and put any custom metrics you might like automatically tracked into the metrics directory before running scripts/build_pkg.sh
 
-Precompiled binaries are available in https://github.com/rremer/cloudwatchd/tree/master/bin
+Precompiled binaries are available in bin:
+Debian archive: https://github.com/rremer/cloudwatchd/raw/master/bin/cloudwatchd.deb
+64bit rpm: https://github.com/rremer/cloudwatchd/raw/master/bin/cloudwatchd-1.0-1.x86_64.rpm
