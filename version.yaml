@@ -1,7 +1,8 @@
 Name: cloudwatchd
-Version: 1.0
+Version: 1.1
 Maintainer: Royce Remer <rremer@sunrunhome.com>
 Priority: optional
+Urgency: low
 Section: admin
 Group: Applications/System
 Summary: Continuously stream a directory of script output(s) to Amazon's Cloudwatch
@@ -9,4 +10,4 @@ Description: A daemon which takes a directory of scripts in various programming 
 Depends: python, python-boto
 License: GPL
 Architecture: all
-Changelog: Initial release
+Changelog: * Bolstered post install and post remove scripts

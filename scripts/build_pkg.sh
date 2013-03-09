@@ -1,6 +1,9 @@
 #!/bin/sh
 #
-# Build a binary archive of cloudwatchd
+# Build a binary archive of cloudwatchd... super hacky to support both rpm, deb,
+# and potentially other formats. Inspiring commits to alien to accept special
+# scriptable arguments
+# TODO: refactor to a function per special file... would make more sense
 
 case "$1" in
     deb|--deb)
@@ -29,14 +32,23 @@ setup() {
     cd $EXEC_PATH
 
     # Make the packaging dir and copy distro-agnostic files
-    mkdir cloudwatchd
     mkdir -p cloudwatchd/etc/init.d
+    chmod -R 0755 cloudwatchd
     cp ../cloudwatchd.init cloudwatchd/etc/init.d/cloudwatchd
-    mkdir cloudwatchd/etc/cloudwatchd
+    chmod -R 0755 cloudwatchd/etc/init.d
+    mkdir -m 0755 cloudwatchd/etc/cloudwatchd
     cp ../*.conf cloudwatchd/etc/cloudwatchd/
-    mkdir -p cloudwatchd/usr/sbin
+    chmod 0644 cloudwatchd/etc/cloudwatchd/*
+    mkdir -m 0755 -p cloudwatchd/usr/sbin
+    chmod 0755 cloudwatchd/usr
     cp ../cloudwatchd-worker.py cloudwatchd/usr/sbin/cloudwatchd-worker
-    cp -r ../metrics cloudwatchd/
+    chmod -R 0755 cloudwatchd/usr/sbin
+    cp -r ../metrics cloudwatchd/etc/cloudwatchd/
+    chmod -R 0755 cloudwatchd/etc/cloudwatchd/metrics
+    mkdir -p cloudwatchd/usr/share/doc/cloudwatchd
+    chmod -R 0755 cloudwatchd/usr/share
+    cp ../copyright cloudwatchd/usr/share/doc/cloudwatchd/
+    chmod 0644 cloudwatchd/usr/share/doc/cloudwatchd/copyright
     # Copy MANPAGEs, identified by a title line
     for MANPAGE in $(grep ".TH" ../docs/* | cut -d ':' -f 1 | uniq)
         do
@@ -46,25 +58,53 @@ setup() {
                 else mkdir -p $MANPATH
             fi
             cp $MANPAGE $MANPATH/
+            single_manpath="$MANPATH/$(echo $MANPAGE | sed 's_../docs/__g')"
+            gzip -9 $single_manpath
+            chmod 644 $single_manpath*
         done
 }
 
 build() {
-    echo "[INFO]: Building $PKG package in $ORIGWD, this will require root privileges."
+    echo "[INFO]: Building $PKG package in $ORIGWD"
     if [ "$PKG" = "deb" ]
         then
             MANIFEST_OUT='cloudwatchd/DEBIAN/control'
             mkdir -p cloudwatchd/DEBIAN
             cp -r ../deb/control/* cloudwatchd/DEBIAN/
+            chmod 644 cloudwatchd/DEBIAN/control
             buildManifest
             chmod -R 0755 cloudwatchd/DEBIAN
-            cd cloudwatchd
+            # Generate the changelog
+            changelog=cloudwatchd/usr/share/doc/cloudwatchd/changelog
+            template_urgency=$(awk -F"Urgency" '{printf $2}' "$MANIFEST_TEMPLATE" |\
+            awk -F": " '{printf $2}')
+            template_version=$(awk -F"Version" '{printf $2}' "$MANIFEST_TEMPLATE" |\
+            awk -F": " '{printf $2}')
+            template_changelog=$(awk -F"Changelog" '{printf $2}' "$MANIFEST_TEMPLATE" |\
+            awk -F": " '{printf $2}')
+            template_maintainer=$(awk -F"Maintainer" '{printf $2}' "$MANIFEST_TEMPLATE" |\
+            awk -F": " '{printf $2}')
+            echo "cloudwatchd ($template_version); urgency=$template_urgency" > "$changelog"
+            echo "$template_changelog" >> "$changelog"
+            timedate=$(date +"%a, %d %b %Y %H:%M:%S %z")
+            echo "$template_maintainer  $timedate" >> "$changelog"
+            gzip -9 "$changelog"
+            chmod 0644 "$changelog".gz
             # Generate the md5sums file
+            cd cloudwatchd
             find . -type f | xargs md5sum | \
-            sed -e 's_  ._ _g' | \
-            grep -v "\/DEBIAN\/" > DEBIAN/md5sums
-            cd ..
+            sed -e 's_  ./_ _g' | \
+            grep -v "DEBIAN\/" > DEBIAN/md5sums
+            chmod 644 DEBIAN/md5sums
+            # Generate the conffiles
+            cd etc
+            find . -type f |\
+            sed -e 's_\./_/etc/_g' > ../DEBIAN/conffiles
+            chmod 644 ../DEBIAN/conffiles
+            # Get back to the scripts dir
+            cd ../..
             # Build the deb
+            sudo chown -R root:root cloudwatchd
             sudo dpkg-deb --build cloudwatchd
     elif [ "$PKG" = "rpm" ]
         then
@@ -80,6 +120,7 @@ build() {
                 else BUILDROOT="$EXEC_PATH/cloudwatchd"
             fi
             # Build the rpm
+            sudo chown -R root:root cloudwatchd
             sudo rpmbuild -bb $MANIFEST_OUT --buildroot $BUILDROOT --define "_rpmdir ."
     else
         echo "$PKG is not a valid build option, exiting."
@@ -93,8 +134,11 @@ build() {
 
 teardown() {
     cd $ORIGWD
-    echo "[INFO]: $EXEC_PATH/cloudwatchd directory may be deleted, but kept if you want\
- to manually build with extra files."
+    if [ "$PKG" = 'deb' ]
+        then sudo rm -r $EXEC_PATH/cloudwatchd
+    elif [ "$PKG" = 'rpm' ]
+        then sudo rm -rf $EXEC_PATH/SPEC
+    fi
 }
 
 buildManifest() {
@@ -102,15 +146,21 @@ buildManifest() {
     # I would do this with pyaml, but not everyone has that installed.
     MANIFEST_TEMPLATE="../version.yaml"
 
-    for value in $(awk -F"!" '{print $2}' "$MANIFEST_OUT")
+    for value in $(awk -F'!' '{print $2}' "$MANIFEST_OUT")
         do
             template_value=$(awk -F"$value" '{printf $2}' "$MANIFEST_TEMPLATE" |\
             awk -F": " '{printf $2}')
             if [ "$PKG" = 'deb' ]
                 then true
-                # deb control file descriptions need to be indented
+                # make control description lines indented and < 80 chars
                 if [ "$value" = 'Description' ]
-                    then template_value="  $template_value"
+                    then
+                        echo "$template_value" > .description.tmp
+                        fold -w 80 -s .description.tmp > .description.tmp.2
+                        sed -i 's/^/ /g' .description.tmp.2
+                        sed -i '/\!Description\!/d' "$MANIFEST_OUT"
+                        cat .description.tmp.2 >> "$MANIFEST_OUT"
+                        rm .description.tmp*
                 fi
             elif [ "$PKG" = 'rpm' ]
                 then
@@ -127,7 +177,7 @@ buildManifest() {
                         # so we can *append* all files
                         sed -i -e's_%files__g' "$MANIFEST_OUT"
                         # Remove the tag, the final sed does nothing this round
-                        sed -i -e's_'!"$value"!'_d' "$MANIFEST_OUT"
+                        sed -i -e'/\!RPMFiles\!/d' "$MANIFEST_OUT"
                         # Append the files tag and dump all paths after it
                         echo '%files' >> "$MANIFEST_OUT"
                         cat rpmfiles.tmp >> "$MANIFEST_OUT"

@@ -17,4 +17,4 @@ The scripts/build_pkg.sh script will pull in the configuration files and sample 
 Precompiled binaries are available in bin:
 
 * https://github.com/rremer/cloudwatchd/raw/master/bin/cloudwatchd.deb
-* https://github.com/rremer/cloudwatchd/raw/master/bin/cloudwatchd-1.0-1.x86_64.rpm
+* https://github.com/rremer/cloudwatchd/raw/master/bin/cloudwatchd.rpm

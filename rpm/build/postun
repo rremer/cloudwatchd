@@ -1,4 +1,4 @@
-if [ -n `grep cloudwatchd /etc/shadow` ]
+if [ $(grep cloudwatchd /etc/shadow -c) -ne 0 ]
     then deluser cloudwatchd
 fi
 
