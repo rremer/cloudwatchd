@@ -242,6 +242,8 @@ def init_logger(options):
             options.log_filepath, mode='a', maxBytes=20000, backupCount=5)
 
     handler.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s [%(levelname)s] %(message)s')
+    handler.setFormatter(formatter)
     logger.addHandler(handler)
     return logger
 
