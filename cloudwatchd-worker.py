@@ -142,6 +142,16 @@ def put_metrics(cloudwatch_con, metrics_dir, options, logger):
         logger: Logging object.
     """
 
+    # Determine if detailed monitoring is enabled
+    # This will change with https://github.com/boto/boto/pull/1383
+    instance_dynamic = boto.utils._get_instance_metadata(
+        'http://169.254.169.254/latest/dynamic/').keys()
+    try:
+        instance_dynamic.keys().index('fws')
+        cloudwatch_detailed = True
+    except ValueError:
+        cloudwatch_detailed = False
+
     instance_metadata = boto.utils.get_instance_metadata()
     cloudwatch_metric_dict = (
         {'dimensions':
@@ -205,8 +215,11 @@ def put_metrics(cloudwatch_con, metrics_dir, options, logger):
                         cloudwatch_metric_dict,cloudwatch_con.region))
                     cloudwatch_con.put_metric_data(**cloudwatch_metric_dict)
                 else:
-                    logger.warn("""Last run of %s produced no value, 
-                        nothing to send to cloudwatch""" %script_path)
+                    logger.warn("Last run of %s produced no value, "
+                        "nothing to send to cloudwatch" %script_path)
+        if cloudwatch_detailed == False:
+            logger.warn("""You must enable detailed monitoring in Amazon's
+                Cloudwatch for sent metrics to appear in the panel.""")
         logger.info(("Sleeping %s seconds") %options.interval)
         sleep(options.interval)
 
@@ -238,7 +251,7 @@ if __name__ == "__main__":
     Logger.info("Using %s as configuration file" %cli_options.conf_filename)
     cloudwatch_conf = parse_conf(cli_options.conf_filename)
     aws_creds = parse_conf(cloudwatch_conf.get('AWS_CREDENTIAL_FILE'))
-    Logger.info(("using %s as credentials file") %(cloudwatch_conf.get(
+    Logger.info(("Using %s as credentials file") %(cloudwatch_conf.get(
         'AWS_CREDENTIAL_FILE')))
     CloudwatchCon = get_connection(credentials=aws_creds, logger=Logger)
     put_metrics(
