@@ -147,7 +147,7 @@ def put_metrics(cloudwatch_con, metrics_dir, options, logger):
     instance_dynamic = boto.utils._get_instance_metadata(
         'http://169.254.169.254/latest/dynamic/').keys()
     try:
-        instance_dynamic.keys().index('fws')
+        instance_dynamic.index('fws')
         cloudwatch_detailed = True
     except ValueError:
         cloudwatch_detailed = False
@@ -218,8 +218,8 @@ def put_metrics(cloudwatch_con, metrics_dir, options, logger):
                     logger.warn("Last run of %s produced no value, "
                         "nothing to send to cloudwatch" %script_path)
         if cloudwatch_detailed == False:
-            logger.warn("""You must enable detailed monitoring in Amazon's
-                Cloudwatch for sent metrics to appear in the panel.""")
+            logger.warn("You must enable detailed monitoring in Amazon's "
+                "Cloudwatch for sent metrics to appear in the panel.")
         logger.info(("Sleeping %s seconds") %options.interval)
         sleep(options.interval)
 
