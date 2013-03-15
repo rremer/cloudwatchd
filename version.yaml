@@ -1,5 +1,5 @@
 Name: cloudwatchd
-Version: 1.2
+Version: 2
 Maintainer: Royce Remer <rremer@sunrunhome.com>
 Priority: optional
 Urgency: low
@@ -10,4 +10,4 @@ Description: A daemon which takes a directory of scripts in various programming 
 Depends: python, python-boto
 License: GPL
 Architecture: all
-Changelog: * Check for detailed monitoring https://github.com/rremer/cloudwatchd/issues/7\n* Added timestamp and loglevel to logfiles https://github.com/rremer/cloudwatchd/issues/5\n* Bolstered post install and post remove scripts
+Changelog: * parse ec2 tags as metric dimensions https://github.com/rremer/cloudwatchd/issues/6\n* Check for detailed monitoring https://github.com/rremer/cloudwatchd/issues/7\n* Added timestamp and loglevel to logfiles https://github.com/rremer/cloudwatchd/issues/5\n* Bolstered post install and post remove scripts
