@@ -1,21 +1,23 @@
 Cloudwatchd is a daemon which takes a directory of scripts in various programming languages, runs them at a designated interval, and sends their stdout along with parsed metadata to Amazon's Cloudwatch. To use this daemon, you will need to create an IAM user with at minimum the following policy applied:
 
-``{"Statement": [{
-  "Sid": "Stmt1363630451413",
-  "Action": [
-    "ec2:DescribeTags"],
-  "Effect": "Allow",
-  "Resource": ["*"]},
-{"Sid": "Stmt1363630480443",
-  "Action": [
-    "cloudwatch:PutMetricData"],
-  "Effect": "Allow",
-  "Resource": ["*"]},
-{"Sid": "Stmt1363630601639",
- "Action": [
-   "ec2:DescribeInstances"],
- "Effect": "Allow",
- "Resource": ["*"]}]}``
+.. code:: yaml
+
+    {"Statement": [{
+      "Sid": "Stmt1363630451413",
+      "Action": [
+        "ec2:DescribeTags"],
+      "Effect": "Allow",
+      "Resource": ["*"]},
+    {"Sid": "Stmt1363630480443",
+      "Action": [
+        "cloudwatch:PutMetricData"],
+      "Effect": "Allow",
+      "Resource": ["*"]},
+    {"Sid": "Stmt1363630601639",
+     "Action": [
+       "ec2:DescribeInstances"],
+     "Effect": "Allow",
+     "Resource": ["*"]}]}``
 
 The purpose of this project is to allow you to quickly and easily collect more metrics from an Amazon EC2 instance by:
 
