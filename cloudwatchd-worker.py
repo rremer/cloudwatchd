@@ -100,12 +100,21 @@ def get_connection(credentials, logger):
 
     required_iam_policy = """
         {"Statement": [{
-             "Action": [
-                 "cloudwatch:*",
-                 "sns:*",
-                 "autoscaling:Describe*"],
-             "Effect": "Allow",
-             "Resource": "*"}]}"""
+          "Sid": "Stmt1363630451413",
+          "Action": [
+            "ec2:DescribeTags"],
+          "Effect": "Allow",
+          "Resource": ["*"]},
+        {"Sid": "Stmt1363630480443",
+          "Action": [
+            "cloudwatch:PutMetricData"],
+          "Effect": "Allow",
+          "Resource": ["*"]},
+        {"Sid": "Stmt1363630601639",
+         "Action": [
+           "ec2:DescribeInstances"],
+         "Effect": "Allow",
+         "Resource": ["*"]}]}"""
 
     connection = boto.connect_ec2(
         aws_access_key_id=credentials.get('AWSAccessKeyId'),
