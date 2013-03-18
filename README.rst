@@ -1,4 +1,6 @@
 Cloudwatchd is a daemon which takes a directory of scripts in various programming languages, runs them at a designated interval, and sends their stdout along with parsed metadata to Amazon's Cloudwatch. To use this daemon, you will need to create an IAM user with at minimum the following policy applied:
+.. code:: yaml
+
 {"Statement": [{
   "Sid": "Stmt1363630451413",
   "Action": [
