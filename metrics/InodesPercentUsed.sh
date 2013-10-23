@@ -6,10 +6,8 @@
 # __author__: royce@sunrun.com (Royce Remer)
 
 METRIC_UNIT=Bytes
-DISK_HANDLE=ubuntu-root
-#DISK_HANDLE=xvda1
-TMPFILE=/tmp/InodesPercentUsed-$DISK_HANDLE.txt
-#TMPFILE=/var/run/cloudwatchd/DiskFree$DISK_HANDLE.txt
+DISK_HANDLE=xvda1
+TMPFILE=/var/run/cloudwatchd/InodesPercentUsed-$DISK_HANDLE.txt
 
 DISK_STATS=`df -i | grep "$DISK_HANDLE"`
 if [ -n "$DISK_STATS" ]; then
