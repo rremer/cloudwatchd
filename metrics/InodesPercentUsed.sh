@@ -5,7 +5,7 @@
 # __date__: 10/22/2013
 # __author__: royce@sunrun.com (Royce Remer)
 
-METRIC_UNIT=Bytes
+METRIC_UNIT=Percent
 DISK_HANDLE=xvda1
 TMPFILE=/var/run/cloudwatchd/InodesPercentUsed-$DISK_HANDLE.txt
 
