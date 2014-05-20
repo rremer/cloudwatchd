@@ -18,8 +18,8 @@ You should have received a copy of the GNU General Public License
 along with cloudwatchd. If not, see <http://www.gnu.org/licenses/>.
 """
 
-__author__ = 'Royce Remer (rremer@sunrunhome.com)'
-__version__ = "1.0"
+__author__ = 'Royce Remer (royce@sunrun.com)'
+__version__ = "3.0"
 
 
 import boto
