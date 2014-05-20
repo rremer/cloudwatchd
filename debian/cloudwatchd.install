@@ -1,0 +1,4 @@
+etc/cloudwatchd etc/
+etc/init.d/cloudwatchd etc/init.d/
+man8/ /usr/share/man/man8
+cloudwatchd-worker /usr/sbin/

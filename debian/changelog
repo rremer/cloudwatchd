@@ -1,0 +1,7 @@
+cloudwatchd (3) stable; urgency=low
+
+  * Add cloudwatchd user to adm for log viewing
+  * Remove know extensions running and parse #!
+  * Autostart cloudwatchd service on install
+
+ -- Royce Remer <royce@sunrun.com>  Wed, 23 Apr 2014 09:39:00 -0700

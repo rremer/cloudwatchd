@@ -1,0 +1,109 @@
+#!/bin/sh
+#
+# /etc/init.d/cloudwatchd -- startup script for Amazon Cloudwatch metric streaming
+#
+# Written by Royce Remer <royce@sunrun.com>.
+#
+### BEGIN INIT INFO
+# Provides:           cloudwatchd
+# Required-Start:     $local_fs $remote_fs $network   
+# Required-Stop:      $local_fs $remote_fs $network   
+# Should-Start:       $named 
+# Should-Stop:        $named
+# Default-Start:      2 3 4 5 
+# Default-Stop:       0 1 6
+# Short-Description:  Start cloudwatchd.
+# Description:        Start the cloudwatchd metric stream. 
+### END INIT INFO
+
+#This file is part of cloudwatchd.
+#
+#Cloudwatchd is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Cloudwatchd is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with cloudwatchd. If not, see <http://www.gnu.org/licenses/>.
+
+set -e
+
+CONFFILE="/etc/cloudwatchd/cloudwatchd.conf"
+
+case "$1" in
+  start)
+    logger -t cloudwatchd "Starting cloudwatchd metric streaming service."
+    # Assert the service user exists
+    DAEMON_USER=cloudwatchd
+    if [ -z `grep $DAEMON_USER /etc/shadow` ]
+      then adduser --system --shell /sbin/nologin $DAEMON_USER --gid 0 --no-create-home | logger -t cloudwatchd
+    fi
+
+    # Assert the PID root dir exists
+    DAEMON_PID=/var/run/cloudwatchd/cloudwatchd.pid
+    PIDDIR=/var/run/cloudwatchd
+    if [ -d $PIDDIR ]
+      then true
+      else mkdir $PIDDIR | logger -t cloudwatchd
+    fi
+    chown $DAEMON_USER:root $PIDDIR
+
+    # Assert the logging directory is accessible
+    if [ -d /var/log/cloudwatchd ]
+      then true
+      else mkdir /var/log/cloudwatchd | logger -t cloudwatchd
+    fi
+    if [ `stat --format=%U /var/log/cloudwatchd` != cloudwatchd ]
+      then
+        chown -R cloudwatchd:root /var/log/cloudwatchd | logger -t cloudwatchd
+    fi
+    if [ `stat --format=%a /var/log/cloudwatchd` -ne 1775 ]
+      then
+        chmod -c 1775 /var/log/cloudwatchd | logger -t cloudwatchd
+    fi
+
+    # Run metric stream jobs
+    METRIC_JOBS_DIR=/etc/cloudwatchd/metrics
+    start-stop-daemon --start --pidfile /var/run/cloudwatchd/cloudwatchd.pid \
+      --make-pidfile \
+      --chuid "$DAEMON_USER" \
+      --background \
+      --exec /usr/sbin/cloudwatchd-worker -- $CONFFILE
+  echo "Service cloudwatchd started."
+  ;;
+  stop)
+    logger -t cloudwatchd "Stopping cloudwatchd metric streaming service."
+    start-stop-daemon --stop --pidfile /var/run/cloudwatchd/cloudwatchd.pid \
+      --retry=TERM/20/KILL/5 >/dev/null
+
+    rm -f /var/run/cloudwatchd/cloudwatchd.pid
+    logger -t cloudwatchd "Cloudwatch metric streaming service stopped."
+    echo "Service cloudwatchd stopped."
+  ;;
+  status)
+    if [ -f /var/run/cloudwatchd/cloudwatchd.pid ]
+      then
+        PID=`cat /var/run/cloudwatchd/cloudwatchd.pid`
+        if [ -z `ps h -o pid $PID` ]
+          then echo "cloudwatchd is not running"
+          else echo "cloudwatchd is running with pid $PID"
+        fi
+      else echo "cloudwatchd is not running"
+    fi
+  ;;
+  restart|force-reload)
+    logger -t cloudwatchd "Restarting cloudwatchd metric streaming service."
+    $0 stop
+    sleep 1
+    $0 start
+  ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|force-reload|status"
+    exit 1
+  ;;
+esac

@@ -1,9 +1,0 @@
-Package: !Name!
-Version: !Version!
-Maintainer: !Maintainer!
-Architecture: !Architecture!
-Section: !Section!
-Priority: !Priority!
-Depends: !Depends!
-Description: !Summary!
-!Description!

@@ -1,0 +1,12 @@
+#!/bin/sh
+set -e
+update-rc.d cloudwatchd defaults
+if [ -z "$(id cloudwatchd 2> /dev/null)" ]; then
+    useradd --system --shell /sbin/nologin cloudwatchd --gid 0 --no-create-home
+fi
+usermod cloudwatchd -aG adm
+chown -R cloudwatchd:root /etc/cloudwatchd
+chown cloudwatchd:root /usr/sbin/cloudwatchd-worker
+chmod 1755 /usr/sbin/cloudwatchd-worker
+chmod -R 1755 /etc/cloudwatchd/metrics
+service cloudwatchd start

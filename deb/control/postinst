@@ -1,6 +1,0 @@
-#!/bin/sh
-set -e
-update-rc.d cloudwatchd defaults
-chown -R cloudwatchd:root /etc/cloudwatchd
-chown -R cloudwatchd:root /usr/sbin/cloudwatchd-worker
-chmod -R 1755 /etc/cloudwatchd/metrics

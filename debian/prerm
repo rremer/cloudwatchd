@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+
+trap on_exit EXIT
+on_exit(){
+    exit 0
+}
+
+if [ $(service cloudwatchd status | grep pid -c) -eq 1 ]
+    then service cloudwatchd stop
+fi
