@@ -1,3 +1,5 @@
+> ![Warning](http://png-2.findicons.com/files/icons/1676/primo/128/warning_black.png)This branch for building from yaml/sources of truth target at specific environments is being deprecated in favor of building for dpkg and then using alien to manage package translations between distrobutions.
+
 Cloudwatchd is a daemon which takes a directory of scripts in various programming languages, runs them at a designated interval, and sends their stdout along with parsed metadata to Amazon's Cloudwatch.
 
 The purpose of this project is to allow you to quickly and easily collect more metrics from an Amazon EC2 instance by:
